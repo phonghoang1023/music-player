@@ -44,7 +44,6 @@ public class PlayingQueueAdapter extends RecyclerView.Adapter<PlayingQueueAdapte
         holder.txtArtist.setText(song.getArtist());
         if (song.getAlbumCover() != null) {
             holder.imgAlbumCover.setImageDrawable(song.getAlbumCover());
-            Log.i("=====LOG ", song.getAlbumCover().toString());
         }
         holder.setOnItemCLick(position, mListener);
     }
