@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Music Player</string>
+    <string name="action_my_music">My Music</string>
+    <string name="action_youtube">Youtube</string>
+    <string name="action_setting">Settings</string>
+    <string name="unknown">Unknown</string>
+    <string name="lyric">Lyric is not available</string>
+    <string name="channel_name">CHANNEL_NOTIFICATION</string>
+    <string name="channel_description">CHANNEL_SHOW_PLAYER_NOTIFICATION</string>
+</resources>

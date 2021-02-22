@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/action_my_music"
+        android:icon="@drawable/round_headset_white_24dp"
+        android:title="@string/action_my_music" />
+    <item
+        android:id="@+id/action_youtube"
+        android:icon="@drawable/baseline_smart_display_white_24dp"
+        android:title="@string/action_youtube" />
+    <item
+        android:id="@+id/action_settings"
+        android:icon="@drawable/round_settings_white_24dp"
+        android:title="@string/action_setting" />
+</menu>

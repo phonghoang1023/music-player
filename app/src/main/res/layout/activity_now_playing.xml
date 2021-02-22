@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:animateLayoutChanges="true"
+    android:background="@color/purple_bg"
+    android:orientation="vertical">
+
+    <include
+        android:id="@+id/toolbarNowPlaying"
+        layout="@layout/toolbar_now_playing_activity" />
+
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tabDots"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/toolbarNowPlaying"
+        android:background="@android:color/transparent"
+        android:paddingLeft="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/toolbarNowPlaying"
+        app:tabBackground="@drawable/tab_selector"
+        app:tabGravity="center"
+        app:tabIndicatorHeight="0dp"
+        app:tabPaddingEnd="6dp"
+        app:tabPaddingStart="6dp" />
+
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/viewPager2_now_playing"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/constrain"
+        android:layout_below="@id/tabDots" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/constrain"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:paddingTop="20dp"
+        android:paddingBottom="40dp">
+
+        <ImageView
+            android:id="@+id/imgShuffle"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="18dp"
+            android:layout_marginBottom="6dp"
+            android:background="@drawable/ripple_effect"
+            android:padding="15dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:srcCompat="@drawable/shuffle_off" />
+
+        <ImageView
+            android:id="@+id/imgPrev"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginBottom="6dp"
+            android:background="@drawable/ripple_effect"
+            android:padding="8dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/imgPlay"
+            app:layout_constraintStart_toEndOf="@+id/imgShuffle"
+            app:srcCompat="@drawable/previous" />
+
+        <ImageButton
+            android:id="@+id/imgPlay"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:background="@drawable/ripple_effect"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_play"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <ImageView
+            android:id="@+id/imgNext"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginBottom="6dp"
+            android:background="@drawable/ripple_effect"
+            android:padding="8dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/imgRepeat"
+            app:layout_constraintStart_toEndOf="@+id/imgPlay"
+            app:srcCompat="@drawable/next" />
+
+        <ImageView
+            android:id="@+id/imgRepeat"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="6dp"
+            android:background="@drawable/ripple_effect"
+            android:padding="15dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:srcCompat="@drawable/repeat_off" />
+
+        <ImageView
+            android:id="@+id/imgTimer"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="18dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="40dp"
+            android:background="@drawable/ripple_effect"
+            android:padding="12dp"
+            app:layout_constraintBottom_toTopOf="@id/sbPlaying"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:srcCompat="@drawable/timer_default" />
+
+        <ImageView
+            android:id="@+id/imgAddToPlaylist"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="18dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="40dp"
+            android:background="@drawable/ripple_effect"
+            android:padding="10dp"
+            app:layout_constraintBottom_toTopOf="@id/sbPlaying"
+            app:layout_constraintStart_toStartOf="parent"
+            app:srcCompat="@drawable/round_playlist_add_white_24dp" />
+
+        <TextView
+            android:id="@+id/txtCurrentTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="30dp"
+            android:layout_marginBottom="40dp"
+            android:text="00:00"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp"
+            app:layout_constraintBottom_toTopOf="@+id/imgPlay"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <SeekBar
+            android:id="@+id/sbPlaying"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:layout_marginEnd="5dp"
+            android:layout_marginBottom="40dp"
+            android:background="@drawable/ripple_effect"
+            android:progressBackgroundTint="@color/grey_highlight"
+            android:progressTint="@color/purple_main"
+            android:thumbTint="@color/purple_main"
+            app:layout_constraintBottom_toTopOf="@+id/imgPlay"
+            app:layout_constraintEnd_toStartOf="@id/txtDuration"
+            app:layout_constraintStart_toEndOf="@id/txtCurrentTime" />
+
+        <TextView
+            android:id="@+id/txtDuration"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="30dp"
+            android:layout_marginBottom="40dp"
+            android:text="--:--"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp"
+            app:layout_constraintBottom_toTopOf="@+id/imgPlay"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</RelativeLayout>
