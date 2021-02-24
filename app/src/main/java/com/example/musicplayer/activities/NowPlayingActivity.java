@@ -26,10 +26,11 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.example.musicplayer.R;
 import com.example.musicplayer.adapter.NowPlayingAdapter;
 import com.example.musicplayer.base.IntentAction;
+import com.example.musicplayer.fragments.FragmentPlayingQueue;
 import com.example.musicplayer.fragments.FragmentSongList;
 import com.example.musicplayer.fragments.FragmentTimerDialog;
-import com.example.musicplayer.model.Library;
 import com.example.musicplayer.model.Song;
+import com.example.musicplayer.model.SongsManager;
 import com.example.musicplayer.service.MusicService;
 import com.example.musicplayer.service.TimerService;
 import com.google.android.material.tabs.TabLayout;
@@ -38,8 +39,8 @@ import com.google.android.material.tabs.TabLayoutMediator;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
-public class NowPlayingActivity extends AppCompatActivity implements View.OnClickListener, SeekBar.OnSeekBarChangeListener, FragmentTimerDialog.TimerListener {
-    public static final int REQUEST_CODE = 116;
+public class NowPlayingActivity extends AppCompatActivity implements View.OnClickListener, SeekBar.OnSeekBarChangeListener,
+        FragmentTimerDialog.TimerListener, FragmentPlayingQueue.PlayingQueueChangesListener {
     public static final String TAG_TIMER_DIALOG = "com.example.musicplayer.TAG_TIMER_DIALOG";
     private ViewPager2 viewPager2;
     private TabLayout tabDots;
@@ -88,10 +89,11 @@ public class NowPlayingActivity extends AppCompatActivity implements View.OnClic
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         mIntent = new Intent(this, MusicService.class);
+        mIntent.setAction(IntentAction.ACTION_START_MUSIC_FOREGROUND);
         startService(mIntent);
         String playingList = getIntent().getStringExtra(FragmentSongList.PLAYING_LIST);
 
-        mSongList = Library.getInstance().getAllSongsList();
+        mSongList = SongsManager.getInstance().getAllSongsList();
         mPosition = getIntent().getIntExtra(FragmentSongList.POSITION, 0);
         setOnClickListener();
         onLocalBroadcastReceived();
@@ -109,6 +111,15 @@ public class NowPlayingActivity extends AppCompatActivity implements View.OnClic
         super.onPause();
         if (mRunnable != null) {
             mHandler.removeCallbacks(mRunnable);
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (mMusicService != null) {
+            updatePlayerInfo();
+            updatePlayerProgress();
         }
     }
 
@@ -178,6 +189,7 @@ public class NowPlayingActivity extends AppCompatActivity implements View.OnClic
     }
 
     private void updatePlayerInfo() {
+        if (mMusicService == null) return;
         Song playingSong = mMusicService.getPlayingSong();
         txtDuration.setText(new SimpleDateFormat("mm:ss").format(mMusicService.getDuration()));
         txtPlayingTitle.setText(playingSong.getTitle());
@@ -201,7 +213,7 @@ public class NowPlayingActivity extends AppCompatActivity implements View.OnClic
                 mHandler.postDelayed(this, 500);
             }
         };
-        if (mMusicBound) mHandler.post(mRunnable);
+        if (mMusicService != null) mHandler.post(mRunnable);
     }
 
     @Override
@@ -292,22 +304,36 @@ public class NowPlayingActivity extends AppCompatActivity implements View.OnClic
         mReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                if (intent.getBooleanExtra(MusicService.ON_MEDIA_PLAYER_COMPLETION, false)) {
-                    updatePlayerInfo();
-                }
-                if (intent.getBooleanExtra(MusicService.ON_START_PLAYING, false)) {
-                    updatePlayerInfo();
-                    updatePlayerProgress();
-                }
-                if (intent.getBooleanExtra(TimerService.TIMER_FINISHED, false)) {
-                    imgTimer.setImageResource(R.drawable.timer_default);
-                    mMusicService.pause();
+                if (intent == null) return;
+                String action = intent.getAction();
+                switch (action) {
+                    case IntentAction.ACTION_START_PLAYING:
+                        updatePlayerInfo();
+                    case IntentAction.ACTION_MEDIA_COMPLETE:
+                        updatePlayerProgress();
+                        break;
+                    case IntentAction.ACTION_STOP_MUSIC_FOREGROUND:
+                        unbindService(musicConnection);
+                        finish();
+                        break;
+                    case IntentAction.ACTION_TIMER_FINISHED:
+                        imgTimer.setImageResource(R.drawable.timer_default);
+                        break;
                 }
             }
         };
-        LocalBroadcastManager.getInstance(this).registerReceiver(
-                mReceiver, new IntentFilter(MusicService.MUSIC_SERVICE_EVENT));
-        LocalBroadcastManager.getInstance(this).registerReceiver(
-                mReceiver, new IntentFilter(TimerService.TIMER_SERVICE_EVENT));
+        LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(this);
+        broadcastManager.registerReceiver(mReceiver, new IntentFilter(IntentAction.ACTION_STOP_MUSIC_FOREGROUND));
+        broadcastManager.registerReceiver(mReceiver, new IntentFilter(IntentAction.ACTION_START_PLAYING));
+        broadcastManager.registerReceiver(mReceiver, new IntentFilter(IntentAction.ACTION_MEDIA_COMPLETE));
+        broadcastManager.registerReceiver(mReceiver, new IntentFilter(IntentAction.ACTION_TIMER_FINISHED));
+    }
+
+    @Override
+    public void onPlayingQueueChanges(int pos) {
+        if (mMusicService != null) {
+            mMusicService.setSongPosition(pos);
+            mMusicService.playSong();
+        }
     }
 }

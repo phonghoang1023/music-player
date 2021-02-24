@@ -5,6 +5,16 @@
     <string name="action_setting">Settings</string>
     <string name="unknown">Unknown</string>
     <string name="lyric">Lyric is not available</string>
-    <string name="channel_name">CHANNEL_NOTIFICATION</string>
-    <string name="channel_description">CHANNEL_SHOW_PLAYER_NOTIFICATION</string>
+    <string name="playlist_name">Playlist Name:</string>
+    <string name="create_playlist">Create Playlist</string>
+    <string name="create_new_playlist">Create New Playlist</string>
+    <string name="cancel">Cancel</string>
+    <string name="confirm">Confirm</string>
+    <string name="sleep_timer">Sleep Timer</string>
+    <string name="channel_music_player">Music Player</string>
+    <string name="channel_music_player_description">Show music player notification</string>
+    <string name="add_to_queue">Add to queue</string>
+    <string name="add_to_playlist">Add to playlist</string>
+    <string name="add_to_favorite">Add to Favorite</string>
+    <string name="delete_from_device">Delete file from device</string>
 </resources>

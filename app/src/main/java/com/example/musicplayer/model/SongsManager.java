@@ -2,14 +2,14 @@ package com.example.musicplayer.model;
 
 import java.util.ArrayList;
 
-public class Library {
+public class SongsManager {
     private static ArrayList<Song> list;
 
-    private static Library instance;
+    private static SongsManager instance;
 
-    public static Library getInstance() {
+    public static SongsManager getInstance() {
         if (instance == null) {
-            instance = new Library();
+            instance = new SongsManager();
         }
         return instance;
     }
@@ -19,7 +19,7 @@ public class Library {
     }
 
     public void setAllSongsList(ArrayList<Song> list) {
-        Library.list = list;
+        SongsManager.list = list;
     }
 
     public int getNumOfSongs() {

@@ -2,54 +2,55 @@ package com.example.musicplayer.model;
 
 import android.graphics.drawable.Drawable;
 
+
 public class Song {
-    private int mId;
-    private String mTitle;
-    private String mArtist;
-    private String mDuration;
-    private String mAlbum;
-    private String mPath;
-    private Drawable mAlbumCover;
+    private int id;
+    private String title;
+    private String artist;
+    private String duration;
+    private String album;
+    private String path;
+    private Drawable albumCover;
 
     public Song() {
     }
 
-    public Song(int id, String mTitle, String mArtist, String mDuration,
-                String mAlbum, String mPath, Drawable mAlbumCover) {
-        this.mId = id;
-        this.mTitle = mTitle;
-        this.mArtist = mArtist;
-        this.mDuration = mDuration;
-        this.mAlbum = mAlbum;
-        this.mPath = mPath;
-        this.mAlbumCover = mAlbumCover;
+    public Song(int id, String title, String artist, String duration,
+                String album, String path, Drawable albumCover) {
+        this.id = id;
+        this.title = title;
+        this.artist = artist;
+        this.duration = duration;
+        this.album = album;
+        this.path = path;
+        this.albumCover = albumCover;
     }
 
     public int getId() {
-        return mId;
+        return id;
     }
 
     public String getTitle() {
-        return mTitle;
+        return title;
     }
 
     public String getArtist() {
-        return mArtist;
+        return artist;
     }
 
     public String getDuration() {
-        return mDuration;
+        return duration;
     }
 
     public String getAlbum() {
-        return mAlbum;
+        return album;
     }
 
     public String getPath() {
-        return mPath;
+        return path;
     }
 
     public Drawable getAlbumCover() {
-        return mAlbumCover;
+        return albumCover;
     }
 }

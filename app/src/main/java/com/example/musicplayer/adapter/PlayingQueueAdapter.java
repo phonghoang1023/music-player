@@ -1,7 +1,5 @@
 package com.example.musicplayer.adapter;
 
-import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,20 +15,23 @@ import com.example.musicplayer.model.Song;
 import java.util.ArrayList;
 
 public class PlayingQueueAdapter extends RecyclerView.Adapter<PlayingQueueAdapter.SongViewHolder> {
-    private final Context mContext;
-    private final ArrayList<Song> mSongList;
-    private final OnItemClickListener mListener;
+    private final PlayingQueueClickListener mListener;
+    private ArrayList<Song> mSongList;
 
-    public PlayingQueueAdapter(Context context, ArrayList<Song> list, OnItemClickListener listener) {
-        this.mContext = context;
+    public PlayingQueueAdapter(ArrayList<Song> list, PlayingQueueClickListener listener) {
         this.mSongList = list;
         mListener = listener;
+    }
+
+    public void setSongList(ArrayList<Song> songList) {
+        mSongList = songList;
+        notifyDataSetChanged();
     }
 
     @NonNull
     @Override
     public SongViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_playlist, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_playing_queue, parent, false);
         return new SongViewHolder(view);
     }
 
@@ -56,8 +57,8 @@ public class PlayingQueueAdapter extends RecyclerView.Adapter<PlayingQueueAdapte
         return 0;
     }
 
-    public interface OnItemClickListener {
-        void onItemClickListener(int position);
+    public interface PlayingQueueClickListener {
+        void onQueuedSongSelected(int position);
     }
 
     public class SongViewHolder extends RecyclerView.ViewHolder {
@@ -68,12 +69,12 @@ public class PlayingQueueAdapter extends RecyclerView.Adapter<PlayingQueueAdapte
         public SongViewHolder(@NonNull View itemView) {
             super(itemView);
             txtTitle = itemView.findViewById(R.id.txtTitle);
-            txtArtist = itemView.findViewById(R.id.txtArtist);
+            txtArtist = itemView.findViewById(R.id.txtSongsCount);
             imgAlbumCover = itemView.findViewById(R.id.imgAlbumCover);
         }
 
-        public void setOnItemCLick(int position, OnItemClickListener mListener) {
-            itemView.setOnClickListener(view -> mListener.onItemClickListener(position));
+        public void setOnItemCLick(int position, PlayingQueueClickListener mListener) {
+            itemView.setOnClickListener(view -> mListener.onQueuedSongSelected(position));
         }
     }
 }

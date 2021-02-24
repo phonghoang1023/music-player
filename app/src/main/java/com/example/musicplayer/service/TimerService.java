@@ -4,7 +4,6 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.IBinder;
-import android.util.Log;
 
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
@@ -14,11 +13,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class TimerService extends Service {
-    public static final String TIMER_SERVICE_EVENT = "service.COUNTDOWN_TIMER";
-    public static final String TIMER_FINISHED = "service.COUNTDOWN_FINISHED";
-    private final Handler handler = new Handler();
-    public int countDown;
     private Timer StopMusicTimer;
+    private final Handler handler = new Handler();
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -27,15 +23,13 @@ public class TimerService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        countDown = intent.getIntExtra(IntentAction.EXTRA_COUNTDOWN_TIMER, 0);
-        Log.i("====TimerService", " started " + countDown);
+        int countDown = intent.getIntExtra(IntentAction.EXTRA_COUNTDOWN_TIMER, 0);
         if (StopMusicTimer != null) {
             StopMusicTimer.cancel();
-            Log.i("====TimerService", " cancel old service ");
         }
         StopMusicTimer = new Timer();
         StopMusicTimer.schedule(new StopMusicTask(), countDown * 1000);
-        return START_STICKY;
+        return START_NOT_STICKY;
     }
 
     private class StopMusicTask extends TimerTask {
@@ -44,11 +38,14 @@ public class TimerService extends Service {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
-                    Intent intent = new Intent(TIMER_SERVICE_EVENT);
-                    intent.putExtra(TIMER_FINISHED, true);
-                    LocalBroadcastManager.getInstance(TimerService.this).sendBroadcast(intent);
-                    stopService(new Intent(getApplicationContext(), MusicService.class));
-                    Log.i("====TimerService", " request pausing music");
+                    //update timer icon
+                    Intent activityIntent = new Intent(IntentAction.ACTION_TIMER_FINISHED);
+                    LocalBroadcastManager.getInstance(TimerService.this).sendBroadcast(activityIntent);
+                    //pause music service
+                    Intent serviceIntent = new Intent(TimerService.this, MusicService.class);
+                    serviceIntent.setAction(IntentAction.ACTION_PAUSE_PLAYER);
+                    startService(serviceIntent);
+
                     stopSelf();
                 }
             });

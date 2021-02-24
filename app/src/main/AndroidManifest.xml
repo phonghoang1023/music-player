@@ -38,7 +38,12 @@
             </intent-filter>
         </activity>
         <activity android:name=".activities.MainActivity" />
-        <activity android:name=".activities.NowPlayingActivity" />
+        <activity android:name=".activities.NowPlayingActivity">
+            <intent-filter>
+                <action android:name="com.example.musicplayer.activities.ACTION_START_MUSIC_FOREGROUND" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>

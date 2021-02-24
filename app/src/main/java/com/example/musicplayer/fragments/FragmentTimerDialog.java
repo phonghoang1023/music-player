@@ -41,7 +41,7 @@ public class FragmentTimerDialog extends DialogFragment implements View.OnClickL
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
-        mView = inflater.inflate(R.layout.fragment_timer_dialog, container, false);
+        mView = inflater.inflate(R.layout.dialog_timer, container, false);
 
         initView();
         getDialog().getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));

@@ -34,10 +34,9 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     public static final int REPEAT_OFF = 0;
     public static final int REPEAT_ON = 1;
     public static final int REPEAT_ONCE = 2;
-    public static final String MUSIC_SERVICE_EVENT = "service.MusicService";
-    public static final String ON_MEDIA_PLAYER_COMPLETION = "service.MusicService.COMPLETED";
-    public static final String ON_START_PLAYING = "service.MusicService.onPrepared";
     public static final int NOTIFICATION_ID = 115;
+    public final static String NOTIFICATION_CHANNEL_ID =
+            "CHANNEL Music Player";
     private final IBinder musicBind = new MusicBinder();
     private boolean isShuffle;
     private int repeatMode = 0;
@@ -46,43 +45,58 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     private int songPosition;
     private AudioManager audioManager;
     private NotificationReceiver mReceiver;
-    private NotificationManager mManager;
+    private NotificationManager mNotificationManager;
     private Context mContext;
-
-    public MusicService() {
-    }
+    private RemoteViews notificationView;
+    private Notification notification;
 
     @Override
     public void onCreate() {
         super.onCreate();
+        createNotificationChannel();
         mContext = getApplicationContext();
         if (player == null) {
             player = new MediaPlayer();
             initMusicPlayer();
         }
-        createNotificationChannel();
-        showNotification();
-        registerNotificationReceiver();
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (!requestAudioFocus()) {
-            stopSelf();
-            Log.i("====MusicService", " onStartCommand, stopSelf");
+            pause();
         }
-        return START_NOT_STICKY;
+        createNotificationChannel();
+        startForeGroundService();
+        if (intent != null) {
+            String action = intent.getAction();
+            switch (action) {
+                case IntentAction.ACTION_START_MUSIC_FOREGROUND:
+                    startForeGroundService();
+                    registerNotificationReceiver();
+                    break;
+                case IntentAction.ACTION_PAUSE_PLAYER:
+                    pause();
+                    break;
+                case IntentAction.ACTION_PLAY_PAUSE:
+                    if (isPlaying()) {
+                        pause();
+                    } else {
+                        start();
+                    }
+                    break;
+            }
+        }
+        return super.onStartCommand(intent, flags, startId);
     }
 
     @Override
     public void onDestroy() {
         if (player != null) {
             player.release();
-            Log.i("====MusicService", " release player ");
         }
         unregisterReceiver(mReceiver);
         removeAudioFocus();
-        removeNotification();
         super.onDestroy();
     }
 
@@ -90,26 +104,25 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     public IBinder onBind(Intent intent) {
         if (!requestAudioFocus()) {
             stopSelf();
-            Log.i("====MusicService", " onBind, stopSelf");
         }
         return musicBind;
     }
 
     private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            CharSequence name = getString(R.string.channel_name);
-            NotificationChannel channel = new NotificationChannel(IntentAction.NOTIFICATION_CHANNEL_ID,
-                    name, NotificationManager.IMPORTANCE_HIGH);
-            channel.setDescription(getString(R.string.channel_description));
+            CharSequence name = getString(R.string.channel_music_player);
+            int importance = NotificationManager.IMPORTANCE_LOW;
+            NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID,
+                    name, importance);
             channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
-            mManager = getSystemService(NotificationManager.class);
-            mManager.createNotificationChannel(channel);
+            mNotificationManager = getSystemService(NotificationManager.class);
+            mNotificationManager.createNotificationChannel(channel);
         }
     }
 
-    private void showNotification() {
-        RemoteViews notificationView = new RemoteViews(getPackageName(), R.layout.notification_layout);
-        Intent intent = new Intent(IntentAction.EVENT_NOTIFICATION_CLICK);
+    private void startForeGroundService() {
+        notificationView = new RemoteViews(getPackageName(), R.layout.notification_layout);
+        Intent intent = new Intent(IntentAction.ACTION_NOTIFICATION_CLICK);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, intent, 0);
         notificationView.setOnClickPendingIntent(R.id.rlNotification, pendingIntent);
         notificationView.setOnClickPendingIntent(R.id.imgPrev, onButtonNotificationClick(R.id.imgPrev));
@@ -123,7 +136,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
         notificationView.setImageViewResource(R.id.imgPlay, isPlaying() ?
                 R.drawable.round_pause_black_24dp : R.drawable.round_play_arrow_black_24dp);
 
-        Notification notification = new NotificationCompat.Builder(this, IntentAction.NOTIFICATION_CHANNEL_ID)
+        notification = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setContentIntent(pendingIntent)
                 .setSmallIcon(R.mipmap.ic_launcher)
@@ -131,21 +144,33 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
                 .setVibrate(null)
                 .setCustomBigContentView(notificationView)
                 .build();
-        mManager.notify(NOTIFICATION_ID, notification);
+        startForeground(NOTIFICATION_ID, notification);
     }
 
-    private void removeNotification() {
-        mManager.cancel(NOTIFICATION_ID);
+    private void stopForeGroundService() {
+        stopForeground(true);
+        stopSelf();
+
+    }
+
+    private void updateNotification() {
+        if (songList != null) {
+            notificationView.setTextViewText(R.id.songTitle, getPlayingSong().getTitle());
+            notificationView.setTextViewText(R.id.songArtist, getPlayingSong().getArtist());
+        }
+        notificationView.setImageViewResource(R.id.imgPlay, isPlaying() ?
+                R.drawable.round_pause_black_24dp : R.drawable.round_play_arrow_black_24dp);
+        mNotificationManager.notify(NOTIFICATION_ID, notification);
     }
 
     private PendingIntent onButtonNotificationClick(@IdRes int id) {
-        Intent intent = new Intent(IntentAction.EVENT_NOTIFICATION_CLICK);
+        Intent intent = new Intent(IntentAction.ACTION_NOTIFICATION_CLICK);
         intent.putExtra(IntentAction.EXTRA_IMG_CLICKED, id);
         return PendingIntent.getBroadcast(this, id, intent, 0);
     }
 
     private void registerNotificationReceiver() {
-        IntentFilter filter = new IntentFilter(IntentAction.EVENT_NOTIFICATION_CLICK);
+        IntentFilter filter = new IntentFilter(IntentAction.ACTION_NOTIFICATION_CLICK);
         mReceiver = new NotificationReceiver();
         registerReceiver(mReceiver, filter);
     }
@@ -189,7 +214,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
 
     public void pause() {
         player.pause();
-        showNotification();
+        updateNotification();
     }
 
     public void seekTo(int posn) {
@@ -198,10 +223,8 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
 
     public void start() {
         player.start();
-        Intent intent = new Intent(MUSIC_SERVICE_EVENT);
-        intent.putExtra(ON_START_PLAYING, true);
-        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
-        showNotification();
+        sendLocalBroadcast(IntentAction.ACTION_START_PLAYING);
+        updateNotification();
     }
 
     public int getProgress() {
@@ -278,9 +301,7 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
                 || repeatMode == REPEAT_ON) {
             mp.reset();
             playNext();
-            Intent intent = new Intent(MUSIC_SERVICE_EVENT);
-            intent.putExtra(ON_MEDIA_PLAYER_COMPLETION, true);
-            LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+            sendLocalBroadcast(IntentAction.ACTION_MEDIA_COMPLETE);
         }
     }
 
@@ -293,6 +314,12 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
     @Override
     public void onPrepared(MediaPlayer mp) {
         start();
+    }
+
+    private void sendLocalBroadcast(String action) {
+        LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(this);
+        Intent intent = new Intent(action);
+        broadcastManager.sendBroadcast(intent);
     }
 
     public class MusicBinder extends Binder {
@@ -308,7 +335,6 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
             int id = intent.getIntExtra(IntentAction.EXTRA_IMG_CLICKED, -1);
             switch (id) {
                 case R.id.rlNotification:
-                    Log.i("====MusicService", " rlNotification");
                     break;
                 case R.id.imgPrev:
                     playPrev();
@@ -319,13 +345,14 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
                     } else {
                         start();
                     }
-                    showNotification();
+                    updateNotification();
                     break;
                 case R.id.imgNext:
                     playNext();
                     break;
                 case R.id.imgClose:
-                    android.os.Process.killProcess(android.os.Process.myPid());
+                    stopForeGroundService();
+                    sendLocalBroadcast(IntentAction.ACTION_STOP_MUSIC_FOREGROUND);
                     break;
             }
         }

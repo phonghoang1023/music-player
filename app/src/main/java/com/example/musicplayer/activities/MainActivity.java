@@ -23,8 +23,8 @@ import com.example.musicplayer.R;
 import com.example.musicplayer.fragments.FragmentMyMusic;
 import com.example.musicplayer.fragments.FragmentSettings;
 import com.example.musicplayer.fragments.FragmentYoutube;
-import com.example.musicplayer.model.Library;
 import com.example.musicplayer.model.Song;
+import com.example.musicplayer.model.SongsManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.ArrayList;
@@ -33,7 +33,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     private static final String TAG_MY_MUSIC = "FragmentMyMusic";
     private static final String TAG_YOUTUBE = "FragmentYoutube";
     private static final String TAG_SETTINGS = "FragmentSettings";
-    private BottomNavigationView mBottomNavigation;
+    private BottomNavigationView bottomNavigation;
     private long mPressedTime;
 
     @Override
@@ -43,8 +43,8 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
         initView();
         loadFragment(new FragmentMyMusic(), TAG_MY_MUSIC);
-        scanStorageForALlSongs();
-        mBottomNavigation.setOnNavigationItemSelectedListener(this);
+        scanSongsAndSaveToSongManager();
+        bottomNavigation.setOnNavigationItemSelectedListener(this);
     }
 
     @Override
@@ -57,7 +57,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         }
     }
 
-    private void scanStorageForALlSongs() {
+    private void scanSongsAndSaveToSongManager() {
         ArrayList<Song> list = new ArrayList<>();
         Uri uriSong = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
         Uri uriAlbum = MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI;
@@ -96,7 +96,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         if (cursorSong != null) {
             cursorSong.close();
         }
-        Library.getInstance().setAllSongsList(list);
+        SongsManager.getInstance().setAllSongsList(list);
     }
 
     private void loadFragment(Fragment fragment, String tag) {
@@ -106,7 +106,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     }
 
     private void initView() {
-        mBottomNavigation = findViewById(R.id.bottomNavigation);
+        bottomNavigation = findViewById(R.id.bottomNavigation);
     }
 
     @Override

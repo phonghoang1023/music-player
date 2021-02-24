@@ -1,7 +1,5 @@
 package com.example.musicplayer.adapter;
 
-import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,12 +15,10 @@ import com.example.musicplayer.model.Song;
 import java.util.ArrayList;
 
 public class SongsAdapter extends RecyclerView.Adapter<SongsAdapter.SongViewHolder> {
-    private final Context mContext;
     private final ArrayList<Song> mSongList;
-    private final OnItemClickListener mListener;
+    private final SongsClickListener mListener;
 
-    public SongsAdapter(Context context, ArrayList<Song> list, OnItemClickListener listener) {
-        this.mContext = context;
+    public SongsAdapter(ArrayList<Song> list, SongsClickListener listener) {
         this.mSongList = list;
         mListener = listener;
     }
@@ -44,8 +40,8 @@ public class SongsAdapter extends RecyclerView.Adapter<SongsAdapter.SongViewHold
         holder.txtArtist.setText(song.getArtist());
         if (song.getAlbumCover() != null) {
             holder.imgAlbumCover.setImageDrawable(song.getAlbumCover());
-            Log.i("=====LOG ", song.getAlbumCover().toString());
         }
+        holder.imgMoreSettings.setOnClickListener(v -> mListener.onIconMoreSettingsClicked(position));
         holder.setOnItemCLick(position, mListener);
     }
 
@@ -57,24 +53,28 @@ public class SongsAdapter extends RecyclerView.Adapter<SongsAdapter.SongViewHold
         return 0;
     }
 
-    public interface OnItemClickListener {
-        void onItemClickListener(int position);
+    public interface SongsClickListener {
+        void onSongSelected(int position);
+
+        void onIconMoreSettingsClicked(int position);
     }
 
     public class SongViewHolder extends RecyclerView.ViewHolder {
         private final TextView txtTitle;
         private final TextView txtArtist;
         private final ImageView imgAlbumCover;
+        private final ImageView imgMoreSettings;
 
         public SongViewHolder(@NonNull View itemView) {
             super(itemView);
             txtTitle = itemView.findViewById(R.id.txtTitle);
-            txtArtist = itemView.findViewById(R.id.txtArtist);
+            txtArtist = itemView.findViewById(R.id.txtSongsCount);
             imgAlbumCover = itemView.findViewById(R.id.imgAlbumCover);
+            imgMoreSettings = itemView.findViewById(R.id.imgMoreSettings);
         }
 
-        public void setOnItemCLick(int position, OnItemClickListener mListener) {
-            itemView.setOnClickListener(view -> mListener.onItemClickListener(position));
+        public void setOnItemCLick(int position, SongsClickListener mListener) {
+            itemView.setOnClickListener(view -> mListener.onSongSelected(position));
         }
     }
 }
