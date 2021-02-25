@@ -11,9 +11,12 @@ import java.util.List;
 
 @Dao
 public interface PlaylistSongDAO {
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertPlaylistSong(PlaylistSong playlistSong);
 
-    @Query("SELECT songId FROM playlist_song WHERE playlistId LIKE :playlistId")
-    List<Integer> getSongFromPlaylistId(int playlistId);
+    @Query("SELECT songId FROM playlist_song WHERE playlistId = :playlistId")
+    List<Integer> getSongIdFromPlaylistId(int playlistId);
+
+    @Query("SELECT COUNT(*) FROM playlist_song WHERE playlistId = :playlistId")
+    int getSongsCountByPlaylist(int playlistId);
 }

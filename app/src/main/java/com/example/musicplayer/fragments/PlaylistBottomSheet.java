@@ -34,11 +34,11 @@ public class PlaylistBottomSheet extends BottomSheetDialogFragment {
         View view = LayoutInflater.from(getContext()).inflate(R.layout.layout_bottom_sheet, null);
         bottomSheetDialog.setContentView(view);
 
-        RecyclerView rvPlaylist = view.findViewById(R.id.rvPlaylist);
+        RecyclerView rvPlaylist = view.findViewById(R.id.rvBottomSheet);
         rvPlaylist.setLayoutManager(new LinearLayoutManager(getContext()));
         ArrayList<Playlist> listPlaylist = (ArrayList<Playlist>) PlaylistDatabase.getInstance(getContext())
                 .playlistDAO().getListPlaylist();
-        PlaylistsAdapter adapter = new PlaylistsAdapter(position -> mListener.onPlaylistSelected(position));
+        PlaylistsAdapter adapter = new PlaylistsAdapter(getContext(), mListener);
         adapter.setPlaylist(listPlaylist);
         rvPlaylist.setAdapter(adapter);
         return bottomSheetDialog;

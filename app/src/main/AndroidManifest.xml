@@ -15,6 +15,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.MusicPlayer">
+        <activity android:name=".activities.ListActivity"></activity>
+
         <service
             android:name=".service.MusicService"
             android:enabled="true"
@@ -41,6 +43,7 @@
         <activity android:name=".activities.NowPlayingActivity">
             <intent-filter>
                 <action android:name="com.example.musicplayer.activities.ACTION_START_MUSIC_FOREGROUND" />
+
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>

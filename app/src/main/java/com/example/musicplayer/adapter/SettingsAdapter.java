@@ -32,7 +32,7 @@ public class SettingsAdapter extends RecyclerView.Adapter<SettingsAdapter.Settin
         String settingTitle = mList[position];
         if (settingTitle != null) {
             holder.txtSetting.setText(settingTitle);
-            holder.txtSetting.setOnClickListener(v -> mListener.onSettingSelected(position));
+            holder.itemView.setOnClickListener(v -> mListener.onSettingSelected(position));
         }
     }
 
@@ -55,9 +55,5 @@ public class SettingsAdapter extends RecyclerView.Adapter<SettingsAdapter.Settin
             super(itemView);
             txtSetting = itemView.findViewById(R.id.txtSetting);
         }
-
-//        public void setOnItemCLick(int position, SettingsClickListener mListener) {
-//            itemView.setOnClickListener(view -> mListener.onSettingSelected(position));
-//        }
     }
 }

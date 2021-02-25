@@ -1,14 +1,15 @@
 package com.example.musicplayer.model;
 
 import androidx.room.Entity;
+import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
-@Entity(tableName = "playlist_song")
+@Entity(tableName = "playlist_song", indices = @Index(value = {"playlistId", "songId"}, unique = true))
 public class PlaylistSong {
     @PrimaryKey(autoGenerate = true)
     private int id;
-    private int playlistId;
-    private int songId;
+    private final int playlistId;
+    private final int songId;
 
     public PlaylistSong(int playlistId, int songId) {
         this.playlistId = playlistId;
@@ -27,15 +28,7 @@ public class PlaylistSong {
         return playlistId;
     }
 
-    public void setPlaylistId(int playlistId) {
-        this.playlistId = playlistId;
-    }
-
     public int getSongId() {
         return songId;
-    }
-
-    public void setSongId(int songId) {
-        this.songId = songId;
     }
 }

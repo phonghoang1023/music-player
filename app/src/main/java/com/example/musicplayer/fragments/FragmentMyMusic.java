@@ -12,6 +12,7 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.musicplayer.R;
 import com.example.musicplayer.adapter.FragmentMusicAdapter;
+import com.example.musicplayer.database.PlaylistDatabase;
 import com.example.musicplayer.model.SongsManager;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
@@ -31,19 +32,18 @@ public class FragmentMyMusic extends Fragment {
         ViewPager2 viewPager2 = view.findViewById(R.id.viewPager2);
         viewPager2.setAdapter(adapter);
         TabLayout tabLayout = view.findViewById(R.id.tabLayout);
+
         new TabLayoutMediator(tabLayout, viewPager2, (tab, position) -> {
             switch (position) {
                 case 0:
-                    tab.setText("PLAYLISTS");
+                    int playlistCount = PlaylistDatabase.getInstance(getContext())
+                            .playlistDAO().getListPlaylist().size();
+                    tab.setText("PLAYLISTS " + "(" + playlistCount + ")");
                     break;
                 case 1:
-                    tab.setText("SONGS" + " (" +
-                            SongsManager.getInstance().getNumOfSongs() + ")");
+                    int songCount = SongsManager.getInstance().getNumOfSongs();
+                    tab.setText("SONGS " + "(" + songCount + ")");
                     break;
-//                case 2:
-//                    tab.setText("SONGS" + " (" +
-//                            SongsManager.getInstance().getNumOfSongs() + ")");
-//                    break;
             }
         }).attach();
     }

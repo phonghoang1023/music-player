@@ -1,16 +1,7 @@
 package com.example.musicplayer.activities;
 
-import com.example.musicplayer.R;
+import androidx.appcompat.app.AppCompatActivity;
 
-public class SettingsActivity extends BaseActivity {
+public class SettingsActivity extends AppCompatActivity {
 
-    @Override
-    int getContentViewId() {
-        return R.layout.activity_settings;
-    }
-
-    @Override
-    int getBottomNavigationMenuItemId() {
-        return R.id.action_settings;
-    }
 }

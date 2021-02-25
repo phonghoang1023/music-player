@@ -30,7 +30,6 @@
         android:layout_marginTop="5dp"
         android:layout_marginEnd="20dp"
         android:layout_marginBottom="5dp"
-        android:backgroundTint="@color/purple_main"
         android:textSize="20sp" />
 
     <LinearLayout
@@ -46,8 +45,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:background="@android:color/transparent"
             android:padding="10dp"
+            android:background="@drawable/ripple_item"
             android:text="@string/cancel" />
 
         <Button
@@ -55,7 +54,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:background="@android:color/transparent"
+            android:background="@drawable/ripple_item"
             android:padding="10dp"
             android:text="@string/create_playlist" />
     </LinearLayout>

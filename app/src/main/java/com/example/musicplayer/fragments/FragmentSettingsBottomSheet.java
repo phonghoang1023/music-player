@@ -18,8 +18,10 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
 public class FragmentSettingsBottomSheet extends BottomSheetDialogFragment {
     private final SettingsAdapter.SettingsClickListener mListener;
+    private final String[] mSettingsList;
 
-    public FragmentSettingsBottomSheet(SettingsAdapter.SettingsClickListener listener) {
+    public FragmentSettingsBottomSheet(String[] list, SettingsAdapter.SettingsClickListener listener) {
+        mSettingsList = list;
         this.mListener = listener;
     }
 
@@ -30,17 +32,10 @@ public class FragmentSettingsBottomSheet extends BottomSheetDialogFragment {
         View view = LayoutInflater.from(getContext()).inflate(R.layout.layout_bottom_sheet, null);
         bottomDialog.setContentView(view);
 
-        RecyclerView rvPlaylist = view.findViewById(R.id.rvPlaylist);
+        RecyclerView rvPlaylist = view.findViewById(R.id.rvBottomSheet);
         rvPlaylist.setLayoutManager(new LinearLayoutManager(getContext()));
-        String[] settingsList = {
-                getString(R.string.add_to_queue),
-                getString(R.string.add_to_playlist),
-                getString(R.string.add_to_favorite),
-                getString(R.string.delete_from_device)};
 
-        SettingsAdapter adapter = new SettingsAdapter(settingsList, position -> {
-            mListener.onSettingSelected(position);
-        });
+        SettingsAdapter adapter = new SettingsAdapter(mSettingsList, mListener);
 
         rvPlaylist.setAdapter(adapter);
         return bottomDialog;

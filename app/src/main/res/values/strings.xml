@@ -3,6 +3,9 @@
     <string name="action_my_music">My Music</string>
     <string name="action_youtube">Youtube</string>
     <string name="action_setting">Settings</string>
+    <string name="action_add_to_playlist">Add to playlist</string>
+    <string name="action_edit_playlist">Edit playlist</string>
+    <string name="action_delete_playlist">Delete playlist</string>
     <string name="unknown">Unknown</string>
     <string name="lyric">Lyric is not available</string>
     <string name="playlist_name">Playlist Name:</string>

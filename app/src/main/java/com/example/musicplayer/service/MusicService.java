@@ -237,9 +237,10 @@ public class MusicService extends Service implements MediaPlayer.OnPreparedListe
 
     public void playNext() {
         songPosition++;
-        if (songPosition == songList.size() - 1) {
+        if (songPosition == songList.size()) {
             songPosition = 0;
         }
+        Log.i("=======", songList.size() + " - " + songPosition);
         playSong();
     }
 

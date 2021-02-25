@@ -1,6 +1,7 @@
 package com.example.musicplayer.fragments;
 
 import android.app.AlertDialog;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
@@ -19,7 +20,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.musicplayer.R;
+import com.example.musicplayer.activities.ListActivity;
 import com.example.musicplayer.adapter.PlaylistsAdapter;
+import com.example.musicplayer.base.IntentAction;
 import com.example.musicplayer.database.PlaylistDatabase;
 import com.example.musicplayer.model.Playlist;
 import com.example.musicplayer.model.PlaylistSong;
@@ -27,64 +30,74 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 
-public class FragmentPlaylists extends Fragment implements View.OnClickListener {
-    FloatingActionButton fabAddNewPlaylist;
-    EditText edtPlaylistName;
-    private ArrayList<Playlist> mPlaylist;
+public class FragmentPlaylists extends Fragment {
+    private EditText edtPlaylistName;
     private PlaylistsAdapter mAdapter;
+    private RecyclerView recyclerView;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_playlists, container, false);
 
-        RecyclerView recyclerView = view.findViewById(R.id.rvPlaylist);
-        fabAddNewPlaylist = view.findViewById(R.id.fabAddNewPlaylist);
+        recyclerView = view.findViewById(R.id.rvBottomSheet);
+        FloatingActionButton fabAddNewPlaylist = view.findViewById(R.id.fabAddNewPlaylist);
 
-        fabAddNewPlaylist.setOnClickListener(this);
+        setUpRecyclerView();
+        fabAddNewPlaylist.setOnClickListener(v -> showAddNewPlaylistDialog());
 
-        mAdapter = new PlaylistsAdapter(position -> Toast.makeText(getContext(), " " + position, Toast.LENGTH_SHORT).show());
-        updatePlaylistView();
-        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity(),
-                RecyclerView.VERTICAL, false));
-        recyclerView.setAdapter(mAdapter);
         return view;
     }
 
-    @Override
-    public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.fabAddNewPlaylist:
-                LayoutInflater inflater = getLayoutInflater();
-                View view = inflater.inflate(R.layout.dialog_add_new_playlist, null);
-
-                edtPlaylistName = view.findViewById(R.id.edtPlaylistName);
-                Button btnCreatePlaylist = view.findViewById(R.id.btnCreatePlaylist);
-                Button btnCancel = view.findViewById(R.id.btnCancel);
-
-                AlertDialog alertDialog = new AlertDialog.Builder(getContext()).setView(view).create();
-                alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-                alertDialog.show();
-                AlertDialog finalAlertDialog = alertDialog;
-                btnCreatePlaylist.setOnClickListener(v1 -> {
-                    addNewPlaylist();
-                    updatePlaylistView();
-                    finalAlertDialog.dismiss();
-                });
-                btnCancel.setOnClickListener(v12 -> finalAlertDialog.dismiss());
-                break;
-        }
+    private void setUpRecyclerView() {
+        mAdapter = new PlaylistsAdapter(getContext(), this::showPlaylistSongs);
+        updateListOfPlaylist();
+        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity(),
+                RecyclerView.VERTICAL, false));
+        recyclerView.setAdapter(mAdapter);
     }
 
-    private void updatePlaylistView() {
-        mPlaylist = (ArrayList<Playlist>) PlaylistDatabase.getInstance(getContext()).playlistDAO().getListPlaylist();
-        mAdapter.setPlaylist(mPlaylist);
+    private void showPlaylistSongs(int playlistId) {
+        Intent intent = new Intent(getActivity(), ListActivity.class);
+        intent.putExtra(IntentAction.EXTRA_PLAYLIST_ID, playlistId);
+        startActivity(intent);
+    }
+
+    private void showAddNewPlaylistDialog() {
+        LayoutInflater inflater = getLayoutInflater();
+        View view = inflater.inflate(R.layout.dialog_add_new_playlist, null);
+
+        edtPlaylistName = view.findViewById(R.id.edtPlaylistName);
+        edtPlaylistName.requestFocus();
+        Button btnCreatePlaylist = view.findViewById(R.id.btnCreatePlaylist);
+        Button btnCancel = view.findViewById(R.id.btnCancel);
+
+
+        AlertDialog alertDialog = new AlertDialog.Builder(getContext()).setView(view).create();
+        alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        alertDialog.show();
+        AlertDialog finalAlertDialog = alertDialog;
+        btnCreatePlaylist.setOnClickListener(v1 -> {
+            addNewPlaylist();
+            updateListOfPlaylist();
+            finalAlertDialog.dismiss();
+        });
+        btnCancel.setOnClickListener(v2 -> {
+            finalAlertDialog.dismiss();
+            edtPlaylistName.clearFocus();
+        });
+    }
+
+    private void updateListOfPlaylist() {
+        ArrayList<Playlist> playlistList = (ArrayList<Playlist>) PlaylistDatabase
+                .getInstance(getContext()).playlistDAO().getListPlaylist();
+        mAdapter.setPlaylist(playlistList);
     }
 
     private void addNewPlaylist() {
         String playlistTitle = edtPlaylistName.getText().toString().trim();
         if (!TextUtils.isEmpty(playlistTitle)) {
-            Playlist playlist = new Playlist(playlistTitle, 14);
+            Playlist playlist = new Playlist(playlistTitle, 0);
             PlaylistDatabase.getInstance(getContext()).playlistDAO().insertPlaylist(playlist);
             Toast.makeText(getContext(), "Created playlist", Toast.LENGTH_SHORT).show();
         }

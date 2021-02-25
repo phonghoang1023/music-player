@@ -10,12 +10,14 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -26,8 +28,8 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.example.musicplayer.R;
 import com.example.musicplayer.adapter.NowPlayingAdapter;
 import com.example.musicplayer.base.IntentAction;
+import com.example.musicplayer.database.PlaylistDatabase;
 import com.example.musicplayer.fragments.FragmentPlayingQueue;
-import com.example.musicplayer.fragments.FragmentSongList;
 import com.example.musicplayer.fragments.FragmentTimerDialog;
 import com.example.musicplayer.model.Song;
 import com.example.musicplayer.model.SongsManager;
@@ -41,7 +43,7 @@ import java.util.ArrayList;
 
 public class NowPlayingActivity extends AppCompatActivity implements View.OnClickListener, SeekBar.OnSeekBarChangeListener,
         FragmentTimerDialog.TimerListener, FragmentPlayingQueue.PlayingQueueChangesListener {
-    public static final String TAG_TIMER_DIALOG = "com.example.musicplayer.TAG_TIMER_DIALOG";
+    public static final String TAG_TIMER_DIALOG = "TAG_TIMER_DIALOG";
     private ViewPager2 viewPager2;
     private TabLayout tabDots;
     private Toolbar toolbar;
@@ -88,14 +90,9 @@ public class NowPlayingActivity extends AppCompatActivity implements View.OnClic
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        mIntent = new Intent(this, MusicService.class);
-        mIntent.setAction(IntentAction.ACTION_START_MUSIC_FOREGROUND);
-        startService(mIntent);
-        String playingList = getIntent().getStringExtra(FragmentSongList.PLAYING_LIST);
-
-        mSongList = SongsManager.getInstance().getAllSongsList();
-        mPosition = getIntent().getIntExtra(FragmentSongList.POSITION, 0);
-        setOnClickListener();
+        startMusicService();
+        initPlaylist();
+        setupClickListener();
         onLocalBroadcastReceived();
         isNewActivity = true;
     }
@@ -177,7 +174,7 @@ public class NowPlayingActivity extends AppCompatActivity implements View.OnClic
         });
     }
 
-    private void setOnClickListener() {
+    private void setupClickListener() {
         imgPlay.setOnClickListener(this);
         imgPrev.setOnClickListener(this);
         imgNext.setOnClickListener(this);
@@ -188,10 +185,41 @@ public class NowPlayingActivity extends AppCompatActivity implements View.OnClic
         mSeekBar.setOnSeekBarChangeListener(this);
     }
 
+    private void initPlaylist() {
+        int playlistId = getIntent().getIntExtra(IntentAction.EXTRA_PLAYING_LIST_ID, -2);
+        mSongList = getSongListById(playlistId);
+        mPosition = getIntent().getIntExtra(IntentAction.EXTRA_POSITION, 0);
+    }
+
+    private void startMusicService() {
+        mIntent = new Intent(this, MusicService.class);
+        mIntent.setAction(IntentAction.ACTION_START_MUSIC_FOREGROUND);
+        startService(mIntent);
+    }
+
+    private ArrayList<Song> getSongListById(int playlistId) {
+        ArrayList<Song> songList = new ArrayList<>();
+        if (playlistId == IntentAction.ALL_SONGS) {
+            songList = SongsManager.getInstance().getAllSongsList();
+        } else {
+            ArrayList<Integer> songIdList = (ArrayList<Integer>) PlaylistDatabase.getInstance(this)
+                    .playlistSongDAO().getSongIdFromPlaylistId(playlistId);
+            for (Song song : SongsManager.getInstance().getAllSongsList()) {
+                for (int songId : songIdList) {
+                    if (song.getId() == songId) {
+                        songList.add(song);
+                    }
+                }
+            }
+        }
+        return songList;
+    }
+
     private void updatePlayerInfo() {
         if (mMusicService == null) return;
         Song playingSong = mMusicService.getPlayingSong();
-        txtDuration.setText(new SimpleDateFormat("mm:ss").format(mMusicService.getDuration()));
+        txtDuration.setText(new SimpleDateFormat("mm:ss")
+                .format(mMusicService.getDuration()));
         txtPlayingTitle.setText(playingSong.getTitle());
         txtPlayingArtist.setText(playingSong.getArtist());
         mSeekBar.setMax(Integer.parseInt(playingSong.getDuration()));
@@ -257,12 +285,15 @@ public class NowPlayingActivity extends AppCompatActivity implements View.OnClic
             case R.id.imgTimer:
                 FragmentTimerDialog timerDialog = new FragmentTimerDialog();
                 FragmentManager manager = getSupportFragmentManager();
-//                timerDialog.setTargetFragment(this, REQUEST_CODE);
                 timerDialog.show(manager, TAG_TIMER_DIALOG);
                 break;
             case R.id.imgAddToPlaylist:
                 break;
         }
+    }
+
+    public ArrayList<Song> getSongList() {
+        return mSongList;
     }
 
     @Override
@@ -300,6 +331,15 @@ public class NowPlayingActivity extends AppCompatActivity implements View.OnClic
         return true;
     }
 
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                super.onBackPressed();
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
     private void onLocalBroadcastReceived() {
         mReceiver = new BroadcastReceiver() {
             @Override
@@ -314,6 +354,7 @@ public class NowPlayingActivity extends AppCompatActivity implements View.OnClic
                         break;
                     case IntentAction.ACTION_STOP_MUSIC_FOREGROUND:
                         unbindService(musicConnection);
+                        mMusicBound = false;
                         finish();
                         break;
                     case IntentAction.ACTION_TIMER_FINISHED:
